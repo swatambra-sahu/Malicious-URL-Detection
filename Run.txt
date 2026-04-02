@@ -1,0 +1,72 @@
+swatambrasahu@Swatambras-MacBook-Air Malicious-URL-Detection % cd Web_Extension_API 
+swatambrasahu@Swatambras-MacBook-Air Web_Extension_API % source env/bin/activate
+(env) swatambrasahu@Swatambras-MacBook-Air Web_Extension_API % python3 app.py
+ctrl+c to terminate
+(env) swatambrasahu@Swatambras-MacBook-Air Web_Extension_API % deactivate
+swatambrasahu@Swatambras-MacBook-Air Web_Extension_API %
+
+while it is deployed on http://127.0.0.1:5000/
+Go to:
+chrome://extensions/
+🔸 Enable Developer Mode (top right)
+🔸 Click "Load unpacked"
+Select:
+Web_Extension_API/
+🔸 Extension will appear in Chrome toolbar
+
+To unload, click on 'remove'.
+
+swatambrasahu@Swatambras-MacBook-Air Malicious-URL-Detection % source env/bin/activate                                             
+
+(env) swatambrasahu@Swatambras-MacBook-Air Malicious-URL-Detection % pip install -r requirements.txt
+(env) swatambrasahu@Swatambras-MacBook-Air Malicious-URL-Detection % python3 MaliciousURLDetection.py
+(env) swatambrasahu@Swatambras-MacBook-Air Malicious-URL-Detection % deactivate
+
+
+PART 1: HOW TO RUN THE PROJECT (STEP-BY-STEP)
+Step 1: Extract the ZIP
+Extract Web_Extension_API.zip
+You’ll see two main parts:
+backend/ (Flask API + ML model)
+extension/ (Chrome extension)
+ Step 2: Setup Backend (ML + API)
+👉 Open terminal inside backend folder
+🔸 Create virtual environment
+python3 -m venv env
+Activate:
+Mac/Linux:
+source env/bin/activate
+Windows:
+env\Scripts\activate
+🔸 Install dependencies
+pip install flask scikit-learn pandas numpy xgboost
+🔸 Make sure model file exists
+You should have:
+model.pkl
+👉 If not:
+Run your training script first (MaliciousURLDetection.py)
+Save model using:
+import pickle
+pickle.dump(model, open("model.pkl", "wb"))
+🔸 Run Flask server
+python app.py
+👉 Output:
+Running on http://127.0.0.1:5000
+🔹 Step 3: Setup Chrome Extension
+👉 Open Chrome
+Go to:
+chrome://extensions/
+🔸 Enable Developer Mode (top right)
+🔸 Click "Load unpacked"
+Select:
+extension/
+🔸 Extension will appear in Chrome toolbar
+🔹 Step 4: Test the System
+Start Flask server ✅
+Open any website (e.g., google.com)
+Click extension icon
+👉 You’ll see:
+✅ Safe
+⚠️ Malicious
+
+
