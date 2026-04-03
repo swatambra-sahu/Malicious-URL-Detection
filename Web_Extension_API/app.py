@@ -4,7 +4,7 @@ import re
 from urllib.parse import urlparse
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn import svm
+
 from sklearn.preprocessing import LabelEncoder
 from flask_cors import CORS
 
@@ -12,7 +12,14 @@ app = Flask(__name__)
 CORS(app)
 
 # ---------------- LOAD DATA ----------------
-df = pd.read_csv('malicious_phish.csv', nrows=20000)
+df = pd.read_csv('malicious_phish.csv')
+
+# Stratified sampling: cap at 100K rows per class to manage memory
+MAX_PER_CLASS = 100000
+if df.groupby('type').size().max() > MAX_PER_CLASS:
+    df = df.groupby('type', group_keys=False).apply(
+        lambda x: x.sample(min(len(x), MAX_PER_CLASS), random_state=42)
+    ).reset_index(drop=True)
 
 # ---------------- FEATURE FUNCTIONS ----------------
 def contains_ip_address(url):
@@ -91,9 +98,6 @@ X_train, X_test, y_train, y_test = train_test_split(
 rf = RandomForestClassifier(n_estimators=100, random_state=42)
 rf.fit(X_train, y_train)
 
-svm_model = svm.SVC(kernel='linear')
-svm_model.fit(X_train, y_train)
-
 # ---------------- FEATURE EXTRACT ----------------
 def extract_features(url):
     return [
@@ -119,15 +123,42 @@ def extract_features(url):
         letter_count(url)
     ]
 
-def predict_url(url):
-    f = extract_features(url)
-    p = rf.predict([f])[0]
-    return lb.inverse_transform([p])[0]
-
 # ---------------- WEB HOME ----------------
 @app.route('/')
 def home():
     return render_template("index.html")
+
+# ---------------- TRUSTED DOMAINS ----------------
+TRUSTED_DOMAINS = {
+    'google.com', 'youtube.com', 'gmail.com', 'accounts.google.com',
+    'amazon.com', 'aws.amazon.com',
+    'facebook.com', 'instagram.com', 'whatsapp.com',
+    'microsoft.com', 'live.com', 'outlook.com', 'office.com',
+    'login.microsoftonline.com', 'microsoftonline.com',
+    'apple.com', 'icloud.com',
+    'twitter.com', 'x.com',
+    'linkedin.com',
+    'github.com',
+    'netflix.com',
+    'paypal.com',
+    'wikipedia.org',
+    'yahoo.com',
+    'reddit.com',
+}
+
+def is_trusted_domain(url):
+    """Check if the URL's hostname matches or is a subdomain of a trusted domain."""
+    try:
+        hostname = urlparse(url).hostname
+        if not hostname:
+            return False
+        hostname = hostname.lower()
+        for domain in TRUSTED_DOMAINS:
+            if hostname == domain or hostname.endswith('.' + domain):
+                return True
+        return False
+    except Exception:
+        return False
 
 # ---------------- API ROUTE ----------------
 @app.route('/predict', methods=['POST'])
@@ -135,9 +166,24 @@ def predict():
     data = request.json
     url = data.get("url")
 
-    result = predict_url(url)
+    # Trusted domain safeguard: skip ML for known legitimate domains
+    if is_trusted_domain(url):
+        msg = "URL IS SAFE!"
+        return jsonify({
+            "result": msg,
+            "result_str": msg,
+            "predicted_class": "benign",
+            "confidence": 100
+        })
 
-    if result in ['benign','defacement']:
+    f = extract_features(url)
+    predicted_index = rf.predict([f])[0]
+    predicted_class = lb.inverse_transform([predicted_index])[0]
+
+    probabilities = rf.predict_proba([f])[0]
+    confidence = round(float(max(probabilities)) * 100)
+
+    if predicted_class in ['benign', 'defacement']:
         msg = "URL IS SAFE!"
     else:
         msg = "URL IS MALICIOUS!"
@@ -145,7 +191,9 @@ def predict():
     # Important: keep both keys so extension & web work
     return jsonify({
         "result": msg,
-        "result_str": msg
+        "result_str": msg,
+        "predicted_class": predicted_class,
+        "confidence": confidence
     })
 
 # ---------------- RUN ----------------

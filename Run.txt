@@ -37,7 +37,7 @@ Activate:
 Mac/Linux:
 source env/bin/activate
 Windows:
-env\Scripts\activate
+env/Scripts/activate
 🔸 Install dependencies
 pip install flask scikit-learn pandas numpy xgboost
 🔸 Make sure model file exists
