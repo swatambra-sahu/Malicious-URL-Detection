@@ -1,67 +1,86 @@
-## Instructions to run the extension and API
-The "Web_Extension_API" folder is a standalone project consisting of two main components: the API Flask server and the web extension.
+# ThreatShield — Setup & Run Guide
 
-### Step 1:
-Cloning the "Web_Extension_API" folder and then creating an virtual environment.
-Follow the commands :
-```py
+ThreatShield is a URL threat detection system powered by a `RandomForestClassifier` trained on ~651K URLs (with stratified sampling capping each class at 100K rows) from the `malicious_phish.csv` dataset. It classifies URLs into four categories — **Benign**, **Phishing**, **Malware**, and **Defacement** — and returns a confidence score.
+
+---
+
+## Architecture Overview
+
+The project consists of three components:
+
+### Flask Backend (`app.py`)
+- Serves the `/predict` API endpoint that accepts a URL and returns `result_str`, `predicted_class`, and `confidence`.
+- Trains the RandomForest model at startup using the full dataset with stratified sampling.
+- Includes a trusted domain whitelist for known legitimate domains (Google, Amazon, Microsoft, etc.) that bypasses ML classification and returns `benign` with 100% confidence.
+- Serves the web UI via Flask's template rendering.
+
+### Web UI (`templates/index.html`)
+- A single-page application with a dark theme (`#0a0e17` background, `#00ff88` accent).
+- Front-end-only login/signup flow using `localStorage` (stored under the key `ts_user`) — there is no backend authentication.
+- URL scanner with scan history and result display showing predicted category and confidence.
+
+### Chrome Extension (`popup.html`, `popup.js`, `popup.css`, `manifest.json`)
+- A Manifest V3 extension named "ThreatShield" that communicates with the Flask backend's `/predict` endpoint.
+- Features a matching dark theme, auto-detects the current tab's URL, and stores scan history in `chrome.storage.local`.
+- Includes a 10-second fetch timeout via `AbortController` and auto-prepends `https://` to bare domain inputs.
+
+---
+
+## Setup & Run Instructions
+
+### Step 1: Create a virtual environment and install dependencies
+
+```sh
 pip install virtualenv
+python -m venv env
 ```
-```py
-python3 -m venv env
+
+Activate the virtual environment:
+
+**Windows:**
+```sh
+env\Scripts\activate
 ```
-For Windows : 
-```py
-env/Scripts/activate
-```
-For Mac : 
-```py
+
+**Mac / Linux:**
+```sh
 source env/bin/activate
 ```
-Installing the dependencies :
-```py
+
+Install dependencies:
+```sh
 pip install -r requirements.txt
 ```
-### Step 2:
-Running the flask API.
-```py
-python3 app.py
+
+### Step 2: Run the Flask server
+
+```sh
+python app.py
 ```
+
 > [!CAUTION]
-> Running the code might take some time.
-Wait until the follwing message appears in the terminal:
+> The server takes **~1–2 minutes to start** due to model training on the large dataset. Wait until the terminal displays the Flask development server URL before proceeding.
 
-<img width="923" alt="image" src="https://github.com/user-attachments/assets/39f64355-dbf2-4474-a748-087ebf61b6ae">
+Once ready, open the web UI at: **http://127.0.0.1:5000**
 
-### Step 3:
-Loading the extension in the browser. <br>
-i. Go to browser extensions : <br>
-for chrome :
-```js
-chrome://extensions/ 
-```
-for brave :
-```js
-brave://extensions/
-```
-ii. Click on "Load Unpacked"
-<img width="958" alt="image" src="https://github.com/user-attachments/assets/574ae235-8418-411e-ba48-f1f94d7d06b6">
+### Step 3: Load the Chrome extension
 
-iii. Select the "Web_Extension_API" folder
-<img width="958" alt="image" src="https://github.com/user-attachments/assets/8d437888-94c1-4b49-a0d8-bf7939d87148">
+1. Open your browser's extension page:
+   - Chrome: `chrome://extensions/`
+   - Brave: `brave://extensions/`
+2. Enable **Developer mode** (toggle in the top-right corner).
+3. Click **"Load unpacked"** and select the `Web_Extension_API` folder.
+4. The ThreatShield extension will appear in your extensions list. Pin it for quick access.
+5. Click the extension icon — it will auto-fill the current tab's URL. Click **"Scan URL"** or press **Enter** to scan.
 
-iv. The extension will appear here
-<img width="959" alt="image" src="https://github.com/user-attachments/assets/aa8dad67-30bb-4684-8484-67c926d04293">
+---
 
-v. Click on the extension from quick access
-<img width="959" alt="image" src="https://github.com/user-attachments/assets/8cc1356f-07d1-4171-83f7-bb62e7592b39">
+## Known Notes
 
-vi. Paste any url and then click predict
-<img width="959" alt="image" src="https://github.com/user-attachments/assets/e77207ce-0e0e-4825-b59d-8b4c8965e61d">
-
-
-
-
+- **Startup time**: The Flask server takes ~1–2 minutes to start because the RandomForest model trains on ~651K rows at startup.
+- **Bare domains**: URLs entered without a scheme (e.g., `amazon.com` instead of `https://amazon.com`) are automatically prepended with `https://` by the Chrome extension. The web UI also handles this via the backend's trusted domain whitelist, but for best results always include the scheme.
+- **Login/signup**: The authentication flow in the web UI is front-end only — credentials are stored in `localStorage` under the key `ts_user`. There is no backend authentication.
+- **Extension permissions**: The extension requires `tabs`, `storage`, `activeTab`, and `scripting` permissions, plus host access to `http://127.0.0.1:5000/*`.
 
 
 

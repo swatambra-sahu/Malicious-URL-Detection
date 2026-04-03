@@ -1,6 +1,4 @@
-pandas
-matplotlib
-scikit-learn
 flask
 flask-cors
-googlesearch-python
+pandas
+scikit-learn

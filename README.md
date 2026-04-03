@@ -1,13 +1,46 @@
-# Malicious-URL-Detection
+# ThreatShield — URL Threat Detection
 
-## Intoduction
-The use of the internet is growing at an exponential rate. With the increasing availability of internet-enabled devices and the proliferation of internet- based services, people around the world are relying on the internet for everything from communication and entertainment to education and commerce. While the growth of the internet has brought many benefits, it has also created new challenges, particularly around cybersecurity. With more people and devices connected to the internet, the risk of cyber attacks such as phishing, malware, and data breaches has increased, making it more important than ever to ensure that online activities are conducted safely and securely.
+## Introduction
 
-A **URL (Uniform Resource Locator)** is a string of characters that provides a way to access a resource on the internet. It is essentially an address for a web page, file, or other resource that can be accessed through the internet. The risk of malicious URLs lies in the fact that they can be used by attackers to carry out a wide range of cyber attacks, including phishing attacks, malware distribution, and credential harvesting.
+ThreatShield is a URL threat detection system powered by a `RandomForestClassifier` (scikit-learn) trained on ~651K URLs (with stratified sampling capping each class at 100K rows) from the `malicious_phish.csv` dataset. It classifies URLs into four categories — **Benign**, **Phishing**, **Malware**, and **Defacement** — and returns a confidence score.
 
-Detection of malicious URLs is necessary to prevent these attacks from occurring and to protect individuals and organizations from the harmful effects of cybercrime. By using machine learning, it is possible to identify and classify malicious URLs, enabling security professionals to block them before they can cause harm.
+The project includes three components:
+- **Flask Backend** (`Web_Extension_API/app.py`) — serves the `/predict` API and trains the model at startup.
+- **Web UI** (`Web_Extension_API/templates/index.html`) — a dark-themed single-page application with a URL scanner and front-end login/signup.
+- **Chrome Extension** (`Web_Extension_API/popup.html`, `popup.js`, `popup.css`, `manifest.json`) — a Manifest V3 extension with matching dark theme, auto tab-URL detection, and persistent scan history.
 
-This project will focus on Detection of malicious URLs using machine learning.
+### Why URL Threat Detection?
+
+The risk of malicious URLs lies in the fact that they can be used by attackers to carry out a wide range of cyber attacks, including phishing attacks, malware distribution, and credential harvesting. By using machine learning, it is possible to identify and classify malicious URLs, enabling security professionals to block them before they can cause harm.
+
+## Technology Stack
+
+| Component | Technology |
+|---|---|
+| ML Model | `RandomForestClassifier` (scikit-learn) |
+| Backend | Flask, pandas, numpy |
+| Web UI | Tailwind CSS (CDN), Lucide icons, dark theme (`#0a0e17` bg, `#00ff88` accent) |
+| Chrome Extension | Manifest V3, `chrome.storage.local`, `chrome.tabs` API |
+| Dataset | `malicious_phish.csv` (~651K URLs) |
+
+## Architecture
+
+### Flask Backend (`Web_Extension_API/app.py`)
+- Serves the `/predict` API endpoint — accepts a URL, returns `result_str`, `predicted_class`, and `confidence`.
+- Trains the `RandomForestClassifier` at startup using the full dataset with stratified sampling (max 100K rows per class).
+- Includes a trusted domain whitelist for known legitimate domains (Google, Amazon, Microsoft, etc.) that bypasses ML classification.
+- Serves the web UI via Flask template rendering.
+
+### Web UI (`Web_Extension_API/templates/index.html`)
+- Single-page application with a dark theme (`#0a0e17` background, `#00ff88` accent).
+- Front-end-only login/signup flow using `localStorage` (stored under the key `ts_user`) — no backend authentication.
+- URL scanner with scan history and result display showing predicted category and confidence.
+
+### Chrome Extension (`Web_Extension_API/popup.*`, `manifest.json`)
+- Manifest V3 extension named "ThreatShield" that communicates with the Flask `/predict` endpoint.
+- Matching dark theme, auto-detects the current tab's URL on popup open.
+- Stores the last 5 scan results in `chrome.storage.local` for persistent history.
+- 10-second fetch timeout via `AbortController`, auto-prepends `https://` to bare domain inputs.
 
 ## Methodology
 The project has been divided into 4 parts:
@@ -58,14 +91,10 @@ This file consists of 651,191 URLs, out of which 428103 benign or safe URLs, 964
 
 <details>
   <summary> 3. Machine Learning </summary>
-The machine learning model used in this project is SVM, Random Forest and XGBoost.
-  
-SVM stands for Support Vector Machine, a type of machine learning algorithm used for classification and regression analysis. It works by finding the best hyperplane that separates data points of different classes in a high-dimensional space.
 
-Random Forest which is a machine-learning algorithm used for classification, regression, and other tasks. It is an ensemble learning method that works by combining multiple decision trees to make predictions. It is resistant to overfitting, and performs well on complex datasets.
+The production model used in ThreatShield is **Random Forest**, which is a machine-learning algorithm used for classification, regression, and other tasks. It is an ensemble learning method that works by combining multiple decision trees to make predictions. It is resistant to overfitting and performs well on complex datasets.
 
-XGBoost which stands for eXtreme Gradient Boosting, and it is a popular machine learning algorithm used for supervised learning tasks, such as classification and regression. XGBoost is an ensemble method that combines multiple weak prediction models, such as decision trees, to create a stronger and more accurate model. XGBoost works by iteratively training new models that correct the errors of the previous models. During each iteration, the algorithm evaluates the gradient of the loss function with respect to the current model's predictions and uses this information to update the model's parameters. This process is called gradient boosting.
-
+During initial research, SVM and XGBoost were also evaluated. SVM was later removed from the production backend because its O(n²)–O(n³) training complexity made it impractical on the full ~651K-row dataset (causing server startup to hang indefinitely). Random Forest was chosen for its balance of accuracy (99.18%) and training speed.
 
 </details>
 
@@ -85,6 +114,27 @@ Evaluation Metric: Accuracy (the percentage of correct decisions among all corre
   <summary> 5. Conclusion </summary>
 
 
-  The Random Forest algorithm has proven to be effective in detecting malicious URLs in the current dataset. However, there is always room for improvement. By introducing network features, we can gain a better understanding of the URLs' behavior and potentially improve the classification accuracy. Additionally, using a larger dataset can provide more data points for the model to learn from and may lead to improved performance. Embedding the model in applications for easy interface can also automate the detection process, making it more efficient and scalable for real-time monitoring. However, it is important to fine-tune the model's hyperparameters and carefully evaluate its performance on the new dataset to ensure that any new features added are relevant and informative for the classification task.
+  The Random Forest algorithm has proven to be effective in detecting malicious URLs in the current dataset. The model has been deployed in the ThreatShield application — accessible via both a web UI and a Chrome extension — providing real-time URL threat detection. The trusted domain whitelist adds an additional layer of accuracy for well-known legitimate domains.
+
+  There is always room for improvement. By introducing network features, we can gain a better understanding of the URLs' behavior and potentially improve the classification accuracy. Fine-tuning hyperparameters and expanding the dataset can further enhance performance.
 
 </details>
+
+## Setup & Run
+
+For detailed setup instructions (virtual environment, dependencies, running the Flask server, and loading the Chrome extension), see **[`Web_Extension_API/HOW_TO_RUN.md`](Web_Extension_API/HOW_TO_RUN.md)**.
+
+**Quick start:**
+```sh
+cd Web_Extension_API
+pip install -r requirements.txt
+python app.py
+```
+Then open **http://127.0.0.1:5000** in your browser.
+
+## Known Notes
+
+- **Startup time**: The Flask server takes ~1–2 minutes to start because the RandomForest model trains on ~651K rows at startup.
+- **Bare domains**: The Chrome extension auto-prepends `https://` to inputs like `amazon.com` to avoid `urlparse` issues in the backend. For best results, always include the scheme.
+- **Login/signup**: The authentication flow in the web UI is front-end only — stored in `localStorage` under `ts_user`. There is no backend authentication.
+- **Chrome extension permissions**: Requires `tabs`, `storage`, `activeTab`, and `scripting` permissions, plus host access to `http://127.0.0.1:5000/*`.
