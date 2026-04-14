@@ -1,63 +1,62 @@
+import os
 import pandas as pd
-from autoviz.classify_method import data_cleaning_suggestions, data_suggestions
 import matplotlib
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud, STOPWORDS
 
 matplotlib.use('TkAgg')
 
-data = pd.read_csv('Dataset/malicious_phish.csv')
-print(data.shape)
-print(data.head())
-print(data.tail())
-print(data.info())
-print(data.dtypes)
-print("---")
-data_cleaning_suggestions(data)
+def generate_wordcloud(text_data, title):
+    """Helper function to generate and display a word cloud."""
+    wordcloud = WordCloud(
+        width=1600, 
+        height=800, 
+        colormap='Paired',
+        stopwords=STOPWORDS
+    ).generate(text_data)
+    
+    plt.figure(figsize=(12, 14), facecolor='k')
+    plt.title(title, color='white', fontsize=16)
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis("off")
+    plt.tight_layout(pad=0)
+    plt.show(block=False)
+    plt.pause(2)
+    plt.close()
 
+def main():
+    dataset_path = 'Dataset/malicious_phish.csv'
+    
+    if not os.path.exists(dataset_path):
+        print(f"Error: Dataset not found at {dataset_path}. Please check the path.")
+        return
 
-phishing_URLs = data[data.type == 'phishing']
-Benign_URLs = data[data.type == 'benign']
-Defacement_URLs = data[data.type == 'defacement']
-Malware_URLs = data[data.type == 'malware']
+    # Load dataset
+    data = pd.read_csv(dataset_path)
+    
+    # Print basic info
+    print(data.shape)
+    print(data.head())
+    print(data.tail())
+    print(data.info())
+    print(data.dtypes)
+    print("---")
 
+    # Generate word clouds for each category
+    categories = data['type'].unique()
+    
+    for category in categories:
+        print(f"Generating wordcloud for {category}...")
+        # Filter urls belonging to the specific category
+        subset = data[data['type'] == category]
+        
+        # Optimize string concatenation
+        text = " ".join(subset['url'].astype(str))
+        
+        # Call the helper function
+        generate_wordcloud(text, f"{category.capitalize()} URLs")
+        
+    print("Finished loading data and generating visualizations.")
 
-# --- Wordcloud --- #
-
-ben = " ".join(i for i in Benign_URLs.url)
-wordcloud = WordCloud(width=1600, height=800,colormap='Paired').generate(ben)
-plt.figure( figsize=(12,14),facecolor='k')
-plt.title("Benign_URLs")
-plt.imshow(wordcloud, interpolation='bilinear')
-plt.axis("off")
-plt.tight_layout(pad=0)
-plt.show()
-
-
-phish = " ".join(i for i in phishing_URLs.url)
-wordcloud = WordCloud(width=1600, height=800,colormap='Paired').generate(phish)
-plt.figure( figsize=(12,14),facecolor='k')
-plt.title("phishing_URLs")
-plt.imshow(wordcloud, interpolation='bilinear')
-plt.axis("off")
-plt.tight_layout(pad=0)
-plt.show()
-
-deface = " ".join(i for i in Defacement_URLs.url)
-wordcloud = WordCloud(width=1600, height=800,colormap='Paired').generate(deface)
-plt.figure( figsize=(12,14),facecolor='k')
-plt.title("Defacement_URLs")
-plt.imshow(wordcloud, interpolation='bilinear')
-plt.axis("off")
-plt.tight_layout(pad=0)
-plt.show()
-
-mal = " ".join(i for i in Malware_URLs.url)
-wordcloud = WordCloud(width=1600, height=800,colormap='Paired').generate(mal)
-plt.figure( figsize=(12,14),facecolor='k')
-plt.title("Malware_URLs")
-plt.imshow(wordcloud, interpolation='bilinear')
-plt.axis("off")
-plt.tight_layout(pad=0)
-plt.show()
-
+if __name__ == "__main__":
+    main()
