@@ -315,7 +315,6 @@ Malicious-URL-Detection/
 │
 ├── 📄 README.md                          # This file — project documentation
 ├── 📄 RUN.md                             # Step-by-step execution guide
-├── 📄 PROJECT_REPORT.md                  # Detailed academic project report
 ├── 📄 requirements.txt                   # Root-level Python dependencies
 ├── 📄 .gitignore                         # Git ignore rules
 │
@@ -342,34 +341,18 @@ Malicious-URL-Detection/
 │   ├── popup.js                          # Extension logic + API calls
 │   ├── popup.css                         # Extension styling (dark theme)
 │   ├── background.js                     # Extension background service worker
-│   ├── icon.png / icon1.png / icon2.png  # Extension icons
+│   ├── icon.png                          # Extension icons
 │   └── HOW_TO_RUN.md                     # Detailed setup guide for this component
 │
 ├── ☁️ Web_Extension_API_Deployed/        # Flask backend + Chrome extension (DEPLOYED)
-│   ├── (same structure as localhost)      # Points to pythonanywhere.com backend
-│   └── manifest.json                     # host_permissions → pythonanywhere URL
-│
-├── 📐 diagrams/                          # System architecture diagrams (.drawio)
-│   ├── 01_system_architecture.drawio
-│   ├── 02_dfd_level0.drawio
-│   ├── 03_dfd_level1.drawio
-│   ├── 04_dfd_level2.drawio
-│   ├── 05_sequence_diagram.drawio
-│   ├── 06_use_case_diagram.drawio
-│   ├── 07_er_diagram.drawio
-│   ├── 08_block_diagram.drawio
-│   ├── 09_activity_diagram.drawio
-│   └── 10_component_diagram.drawio
-│
-└── 📄 Leveraging_Machine_Learning_for_   # Reference research paper (text)
-    Threat_Detection_....txt
+    ├── (same structure as localhost)      # Points to pythonanywhere.com backend
+    └── manifest.json                     # host_permissions → pythonanywhere URL
+
 ```
 
 ---
 
 ## 🌟 Why This Project Is Impressive
-
-### For Recruiters & Evaluators
 
 - **End-to-end ML pipeline** — From raw data → feature engineering → model training → API serving → browser-native deployment
 - **Production-grade architecture** — REST API, CORS handling, trusted domain whitelist, confidence scoring
