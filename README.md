@@ -11,6 +11,83 @@ The system extracts **20 lexical features** from raw URL strings (no external AP
 
 ---
 
+# 📸 Project Showcase
+
+## 🌐 Web Application
+
+### Homepage
+Dark-themed landing page featuring the URL scanner, authentication, and real-time threat detection interface.
+
+<p align="center">
+<img src="Screenshots/Website/3%20Home_Page.png" width="900">
+</p>
+
+---
+
+### Detection Capabilities
+ThreatShield supports phishing, malware, defacement, domain analysis, real-time scanning, and scan history.
+
+<p align="center">
+<img src="Screenshots/Website/4%20Features.png" width="900">
+</p>
+
+---
+
+### Safe URL Detection
+Correctly classifies legitimate websites with confidence scoring.
+
+<p align="center">
+<img src="Screenshots/Website/6%20Safe_URL.png" width="900">
+</p>
+
+---
+
+### Phishing Detection
+Detects phishing websites attempting to impersonate trusted brands.
+
+<p align="center">
+<img src="Screenshots/Website/7%20Phishing_URL.png" width="900">
+</p>
+
+---
+
+### Threat Analysis Dashboard
+Displays threat classification, confidence score, and recent scan history.
+
+<p align="center">
+<img src="Screenshots/Website/9%20Multiple%20Threat%20Results.png" width="900">
+</p>
+
+---
+
+# 🧩 Chrome Extension
+
+### Extension Popup
+Simple browser extension that automatically detects the active tab URL.
+
+<p align="center">
+<img src="Screenshots/Chrome_Extension/2%20Chrome%20Extension%20PopUp%20Interface.png" width="420">
+</p>
+
+---
+
+### Real-Time Safe Website Scan
+Scan any webpage directly from the browser without leaving the current tab.
+
+<p align="center">
+<img src="Screenshots/Chrome_Extension/4b%20Safe%20Website%20Scan.png" width="900">
+</p>
+
+---
+
+### Real-World Browser Protection
+ThreatShield detects malicious websites alongside Chrome's built-in security warnings, providing ML-based threat classification and confidence scores.
+
+<p align="center">
+<img src="Screenshots/Chrome_Extension/5%20Browser%20Warning%20%26%20Detection.png" width="900">
+</p>
+---
+
 ## ✨ Features
 
 | Feature | Description |
